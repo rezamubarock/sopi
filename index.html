@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#f97316">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Generate custom link dengan tools nama & alamat acak Indonesia">
+  <title>Sopi Tools — Link Generator</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Install Banner -->
+    <div class="install-banner" id="installBanner">
+      <div class="install-banner-text">
+        <div class="install-banner-title">📲 Install Sopi Tools</div>
+        <div class="install-banner-desc">Akses lebih cepat dari home screen</div>
+      </div>
+      <button class="btn btn-sm btn-primary" id="installBtn" style="width:auto;">Install</button>
+      <button class="btn btn-sm btn-secondary" id="dismissInstall" style="width:32px;height:32px;padding:0;">✕</button>
+    </div>
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="app-logo">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+        </svg>
+      </div>
+      <h1 class="app-title">Sopi Tools</h1>
+      <p class="app-subtitle">Generate link custom + tools</p>
+    </header>
+
+    <!-- Link Input Card -->
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">🔗</span>
+        Custom Links
+        <span class="badge badge-count" id="linkCount">1/5</span>
+      </div>
+
+      <div id="linkInputs">
+        <div class="input-group visible" data-index="0">
+          <input type="text" class="input-label-field link-label" placeholder="Label tombol (opsional)" data-index="0">
+          <input type="url" class="input-field link-input" placeholder="https://shopee.co.id/..." data-index="0">
+        </div>
+      </div>
+
+      <button class="btn btn-add" id="addLinkBtn" type="button">
+        <span>+ Tambah Link</span>
+      </button>
+    </div>
+
+    <!-- Generate Button -->
+    <div style="margin-top: 16px;">
+      <button class="btn btn-primary" id="generateBtn" type="button">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        Generate Link
+      </button>
+    </div>
+
+    <!-- Generated Link Result -->
+    <div class="generated-link-box" id="resultBox" style="display:none;">
+      <div class="card-title">
+        <span class="icon">✅</span>
+        Link Berhasil Dibuat!
+      </div>
+      <div class="generated-link-url" id="resultUrl"></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-copy btn-sm" id="copyLinkBtn" style="flex:1;">📋 Copy Link</button>
+        <a class="btn btn-primary btn-sm" id="openLinkBtn" target="_blank" style="flex:1;font-size:0.8rem;">🔗 Buka Link</a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Sopi Tools &copy; 2026 — <a href="https://rezamubarok.com">rezamubarok.com</a></p>
+    </footer>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // === State ===
+    let linkCount = 1;
+    const MAX_LINKS = 5;
+
+    // === DOM Elements ===
+    const linkInputs = document.getElementById('linkInputs');
+    const addLinkBtn = document.getElementById('addLinkBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const resultBox = document.getElementById('resultBox');
+    const resultUrl = document.getElementById('resultUrl');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    const openLinkBtn = document.getElementById('openLinkBtn');
+    const linkCountBadge = document.getElementById('linkCount');
+    const toast = document.getElementById('toast');
+    
+    // === Add Link Input ===
+    addLinkBtn.addEventListener('click', () => {
+      if (linkCount >= MAX_LINKS) {
+        showToast('Maksimal 5 link!', 'error');
+        return;
+      }
+      
+      const group = document.createElement('div');
+      group.className = 'input-group';
+      group.dataset.index = linkCount;
+      group.innerHTML = `
+        <div class="input-row" style="margin-bottom:6px;">
+          <input type="text" class="input-label-field link-label" placeholder="Label tombol (opsional)" data-index="${linkCount}" style="margin-bottom:0;">
+          <button class="btn btn-icon btn-remove btn-sm" onclick="removeLink(this)" type="button">✕</button>
+        </div>
+        <input type="url" class="input-field link-input" placeholder="https://shopee.co.id/..." data-index="${linkCount}">
+      `;
+      linkInputs.appendChild(group);
+      
+      // Trigger animation
+      requestAnimationFrame(() => group.classList.add('visible'));
+      
+      linkCount++;
+      updateCount();
+    });
+
+    // === Remove Link ===
+    window.removeLink = function(btn) {
+      const group = btn.closest('.input-group');
+      group.style.transform = 'translateX(-100%)';
+      group.style.opacity = '0';
+      group.style.transition = 'all 0.3s ease';
+      setTimeout(() => {
+        group.remove();
+        linkCount--;
+        updateCount();
+      }, 300);
+    };
+
+    // === Update Count Badge ===
+    function updateCount() {
+      linkCountBadge.textContent = `${linkCount}/${MAX_LINKS}`;
+      addLinkBtn.style.display = linkCount >= MAX_LINKS ? 'none' : '';
+    }
+
+    // === Generate Link ===
+    generateBtn.addEventListener('click', () => {
+      const inputs = document.querySelectorAll('.link-input');
+      const labels = document.querySelectorAll('.link-label');
+      const links = [];
+
+      inputs.forEach((input, i) => {
+        const url = input.value.trim();
+        if (url) {
+          // Get the corresponding label
+          const label = labels[i] ? labels[i].value.trim() : '';
+          links.push({ url, label: label || '' });
+        }
+      });
+
+      if (links.length === 0) {
+        showToast('Masukkan minimal 1 link!', 'error');
+        return;
+      }
+
+      // Validate URLs
+      for (const link of links) {
+        try {
+          new URL(link.url);
+        } catch {
+          showToast('Format URL tidak valid!', 'error');
+          return;
+        }
+      }
+
+      // Encode to base64  
+      const data = JSON.stringify({ links });
+      const encoded = btoa(unescape(encodeURIComponent(data)));
+      const generatedUrl = `${window.location.origin}/go#${encoded}`;
+
+      resultUrl.textContent = generatedUrl;
+      openLinkBtn.href = generatedUrl;
+      resultBox.style.display = 'block';
+      resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      showToast('Link berhasil di-generate! ✨', 'success');
+    });
+
+    // === Copy Link ===
+    copyLinkBtn.addEventListener('click', () => {
+      const url = resultUrl.textContent;
+      navigator.clipboard.writeText(url).then(() => {
+        copyLinkBtn.classList.add('copied');
+        copyLinkBtn.textContent = '✅ Tersalin!';
+        showToast('Link berhasil disalin!', 'success');
+        setTimeout(() => {
+          copyLinkBtn.classList.remove('copied');
+          copyLinkBtn.textContent = '📋 Copy Link';
+        }, 2000);
+      });
+    });
+
+    // === Toast ===
+    function showToast(msg, type = 'success') {
+      toast.textContent = msg;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // === PWA Install ===
+    let deferredPrompt;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installBanner').classList.add('show');
+    });
+
+    document.getElementById('installBtn').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          showToast('App berhasil diinstall! 🎉', 'success');
+        }
+        deferredPrompt = null;
+        document.getElementById('installBanner').classList.remove('show');
+      }
+    });
+
+    document.getElementById('dismissInstall').addEventListener('click', () => {
+      document.getElementById('installBanner').classList.remove('show');
+    });
+
+    // === Register Service Worker ===
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

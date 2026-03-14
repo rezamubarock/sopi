@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#f97316">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Custom link + tools nama & alamat generator">
+  <title>Sopi Tools — Link Page</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="app-logo">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+        </svg>
+      </div>
+      <h1 class="app-title">Sopi Tools</h1>
+      <p class="app-subtitle">Custom links & generator tools</p>
+    </header>
+
+    <!-- Links Section -->
+    <div class="card" id="linksCard">
+      <div class="card-title">
+        <span class="icon">🔗</span>
+        Link Tersedia
+      </div>
+      <div id="linkButtons">
+        <!-- Dynamically generated -->
+      </div>
+    </div>
+
+    <!-- Name Generator -->
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">👤</span>
+        Generator Nama Indonesia
+      </div>
+      <div class="generator-section">
+        <div class="generator-result" id="nameResult">
+          <span class="generator-result-text placeholder">Klik tombol untuk generate nama acak</span>
+        </div>
+        <div class="generator-actions">
+          <button class="btn btn-primary btn-sm" id="generateNameBtn" type="button">
+            🎲 Generate
+          </button>
+          <button class="btn btn-copy btn-sm" id="copyNameBtn" type="button" disabled>
+            📋 Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Address Generator -->
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">📍</span>
+        Generator Alamat Indonesia
+      </div>
+      <div class="generator-section">
+        <div class="generator-result" id="addressResult" style="align-items:flex-start;">
+          <span class="generator-result-text placeholder">Klik tombol untuk generate alamat acak</span>
+        </div>
+        <div class="generator-actions">
+          <button class="btn btn-primary btn-sm" id="generateAddrBtn" type="button">
+            🎲 Generate
+          </button>
+          <button class="btn btn-copy btn-sm" id="copyAddrBtn" type="button" disabled>
+            📋 Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back link -->
+    <div style="margin-top:16px;text-align:center;">
+      <a href="/" class="btn btn-secondary btn-sm" style="text-decoration:none;">
+        ← Buat Link Baru
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Sopi Tools &copy; 2026 — <a href="https://rezamubarok.com">rezamubarok.com</a></p>
+    </footer>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ===========================
+    // DATA — Nama Indonesia
+    // ===========================
+    const NAMA_DEPAN_L = [
+      'Ahmad', 'Muhammad', 'Andi', 'Budi', 'Cahyo', 'Dedi', 'Eko', 'Fajar',
+      'Galih', 'Hendra', 'Irfan', 'Joko', 'Kurniawan', 'Lukman', 'Maulana',
+      'Naufal', 'Okta', 'Prasetyo', 'Raka', 'Surya', 'Teguh', 'Umar',
+      'Wahyu', 'Yusuf', 'Zainal', 'Arif', 'Bayu', 'Dimas', 'Fauzan',
+      'Gilang', 'Hadi', 'Imam', 'Kevin', 'Luthfi', 'Muhamad', 'Nanda',
+      'Rangga', 'Satria', 'Taufik', 'Rizki', 'Agus', 'Bambang', 'Cecep',
+      'Deni', 'Fikri', 'Gunawan', 'Hasan', 'Ibrahim', 'Jalu', 'Khoirul',
+      'Yoga', 'Aditya', 'Bagus', 'Damar', 'Farhan', 'Putra', 'Raditya',
+      'Sigit', 'Wawan', 'Zaki', 'Ridwan', 'Slamet', 'Ponco', 'Anwar'
+    ];
+
+    const NAMA_DEPAN_P = [
+      'Aisyah', 'Bunga', 'Citra', 'Dewi', 'Endang', 'Fitri', 'Gita',
+      'Hana', 'Indah', 'Jasmine', 'Kartika', 'Lestari', 'Maya', 'Nisa',
+      'Oktavia', 'Putri', 'Ratna', 'Sari', 'Tika', 'Utami', 'Vina',
+      'Wulan', 'Yuni', 'Zahra', 'Anisa', 'Bella', 'Dina', 'Evi',
+      'Farah', 'Gina', 'Hesti', 'Ika', 'Juli', 'Kirana', 'Lia',
+      'Mega', 'Nur', 'Ovia', 'Puspita', 'Rika', 'Sinta', 'Tiara',
+      'Ulfa', 'Vera', 'Widya', 'Yanti', 'Zara', 'Ayu', 'Cantika',
+      'Della', 'Elsa', 'Fani', 'Galuh', 'Intan', 'Laras', 'Nabila',
+      'Rini', 'Siti', 'Tri', 'Wati', 'Nurul', 'Rahayu', 'Suci', 'Lina'
+    ];
+
+    const NAMA_TENGAH = [
+      'Dwi', 'Tri', 'Nur', 'Sri', 'Adi', 'Putra', 'Putri', 'Budi',
+      'Widi', 'Kusuma', 'Agung', 'Cahya', 'Indra', 'Pandu', 'Setia',
+      'Wahid', 'Ilham', 'Akbar', 'Mulya', 'Noor', 'Eka', 'Sukma',
+      'Arya', 'Bagas', 'Dian', 'Fadhil', 'Gading', 'Harun', 'Jaya',
+      '', '', '', '', '', '', '', ''  // Sometimes no middle name
+    ];
+
+    const NAMA_BELAKANG = [
+      'Pratama', 'Saputra', 'Wijaya', 'Kurniawan', 'Hidayat', 'Sanjaya',
+      'Nugroho', 'Purnama', 'Wibowo', 'Setiawan', 'Firmansyah', 'Ramadhan',
+      'Hakim', 'Susanto', 'Hartono', 'Suryanto', 'Budiman', 'Permana',
+      'Kusuma', 'Mahendra', 'Gunawan', 'Utomo', 'Santoso', 'Pranoto',
+      'Subekti', 'Handoko', 'Wirawan', 'Pradipta', 'Wicaksono', 'Suryadi',
+      'Syahputra', 'Maulana', 'Harahap', 'Situmorang', 'Nasution',
+      'Panjaitan', 'Lubis', 'Siregar', 'Hutapea', 'Simanjuntak',
+      'Rahmawati', 'Anggraeni', 'Lestari', 'Handayani', 'Puspitasari',
+      'Damayanti', 'Kusumawardani', 'Safitri', 'Maharani', 'Permatasari'
+    ];
+
+    // ===========================
+    // DATA — Alamat Indonesia
+    // ===========================
+    const JALAN = [
+      'Jl. Merdeka', 'Jl. Sudirman', 'Jl. Gatot Subroto', 'Jl. Ahmad Yani',
+      'Jl. Diponegoro', 'Jl. Imam Bonjol', 'Jl. Cut Mutia', 'Jl. Kartini',
+      'Jl. Pahlawan', 'Jl. Veteran', 'Jl. Pemuda', 'Jl. Mangga',
+      'Jl. Kenanga', 'Jl. Melati', 'Jl. Mawar', 'Jl. Dahlia',
+      'Jl. Anggrek', 'Jl. Flamboyan', 'Jl. Cempaka', 'Jl. Teratai',
+      'Jl. Raya Bogor', 'Jl. Raya Serpong', 'Jl. Raya Bekasi',
+      'Jl. Letjen S. Parman', 'Jl. Prof. Dr. Satrio', 'Jl. HR Rasuna Said',
+      'Jl. Margonda Raya', 'Jl. Hayam Wuruk', 'Jl. Gajah Mada',
+      'Jl. Thamrin', 'Jl. Cikini Raya', 'Jl. Salemba Raya',
+      'Jl. Kramat Raya', 'Jl. Pramuka', 'Jl. Matraman Raya',
+      'Jl. Kalibata Raya', 'Jl. Cilandak', 'Jl. Fatmawati',
+      'Jl. Radio Dalam', 'Jl. Kemang Raya'
+    ];
+
+    const KELURAHAN_KECAMATAN = [
+      { kel: 'Menteng', kec: 'Menteng', kota: 'Jakarta Pusat', prov: 'DKI Jakarta', kpos: '10310' },
+      { kel: 'Kebayoran Baru', kec: 'Kebayoran Baru', kota: 'Jakarta Selatan', prov: 'DKI Jakarta', kpos: '12110' },
+      { kel: 'Kelapa Gading', kec: 'Kelapa Gading', kota: 'Jakarta Utara', prov: 'DKI Jakarta', kpos: '14240' },
+      { kel: 'Cengkareng', kec: 'Cengkareng', kota: 'Jakarta Barat', prov: 'DKI Jakarta', kpos: '11730' },
+      { kel: 'Jatinegara', kec: 'Jatinegara', kota: 'Jakarta Timur', prov: 'DKI Jakarta', kpos: '13310' },
+      { kel: 'Coblong', kec: 'Coblong', kota: 'Bandung', prov: 'Jawa Barat', kpos: '40132' },
+      { kel: 'Sukajadi', kec: 'Sukajadi', kota: 'Bandung', prov: 'Jawa Barat', kpos: '40162' },
+      { kel: 'Tegalsari', kec: 'Tegalsari', kota: 'Surabaya', prov: 'Jawa Timur', kpos: '60262' },
+      { kel: 'Wonokromo', kec: 'Wonokromo', kota: 'Surabaya', prov: 'Jawa Timur', kpos: '60243' },
+      { kel: 'Banyumanik', kec: 'Banyumanik', kota: 'Semarang', prov: 'Jawa Tengah', kpos: '50264' },
+      { kel: 'Pedurungan', kec: 'Pedurungan', kota: 'Semarang', prov: 'Jawa Tengah', kpos: '50192' },
+      { kel: 'Gondokusuman', kec: 'Gondokusuman', kota: 'Yogyakarta', prov: 'DI Yogyakarta', kpos: '55221' },
+      { kel: 'Mergangsan', kec: 'Mergangsan', kota: 'Yogyakarta', prov: 'DI Yogyakarta', kpos: '55151' },
+      { kel: 'Denpasar Selatan', kec: 'Denpasar Selatan', kota: 'Denpasar', prov: 'Bali', kpos: '80228' },
+      { kel: 'Kuta', kec: 'Kuta', kota: 'Badung', prov: 'Bali', kpos: '80361' },
+      { kel: 'Medan Baru', kec: 'Medan Baru', kota: 'Medan', prov: 'Sumatera Utara', kpos: '20154' },
+      { kel: 'Padang Timur', kec: 'Padang Timur', kota: 'Padang', prov: 'Sumatera Barat', kpos: '25129' },
+      { kel: 'Ilir Timur I', kec: 'Ilir Timur I', kota: 'Palembang', prov: 'Sumatera Selatan', kpos: '30113' },
+      { kel: 'Pontianak Kota', kec: 'Pontianak Kota', kota: 'Pontianak', prov: 'Kalimantan Barat', kpos: '78111' },
+      { kel: 'Banjarmasin Tengah', kec: 'Banjarmasin Tengah', kota: 'Banjarmasin', prov: 'Kalimantan Selatan', kpos: '70111' },
+      { kel: 'Manado', kec: 'Wenang', kota: 'Manado', prov: 'Sulawesi Utara', kpos: '95111' },
+      { kel: 'Tamalanrea', kec: 'Tamalanrea', kota: 'Makassar', prov: 'Sulawesi Selatan', kpos: '90245' },
+      { kel: 'Lowokwaru', kec: 'Lowokwaru', kota: 'Malang', prov: 'Jawa Timur', kpos: '65141' },
+      { kel: 'Bogor Tengah', kec: 'Bogor Tengah', kota: 'Bogor', prov: 'Jawa Barat', kpos: '16124' },
+      { kel: 'Tanah Abang', kec: 'Tanah Abang', kota: 'Jakarta Pusat', prov: 'DKI Jakarta', kpos: '10210' },
+      { kel: 'Tebet', kec: 'Tebet', kota: 'Jakarta Selatan', prov: 'DKI Jakarta', kpos: '12810' },
+      { kel: 'Ciputat', kec: 'Ciputat', kota: 'Tangerang Selatan', prov: 'Banten', kpos: '15411' },
+      { kel: 'Serpong', kec: 'Serpong', kota: 'Tangerang Selatan', prov: 'Banten', kpos: '15310' },
+      { kel: 'Bekasi Selatan', kec: 'Bekasi Selatan', kota: 'Bekasi', prov: 'Jawa Barat', kpos: '17146' },
+      { kel: 'Depok', kec: 'Pancoran Mas', kota: 'Depok', prov: 'Jawa Barat', kpos: '16431' }
+    ];
+
+    // ===========================
+    // Utility
+    // ===========================
+    function rand(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function randNum(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    async function copyText(text, btn, originalText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.classList.add('copied');
+        btn.textContent = '✅ Tersalin!';
+        showToast('Berhasil disalin!', 'success');
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.textContent = originalText;
+        }, 2000);
+      } catch {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.classList.add('copied');
+        btn.textContent = '✅ Tersalin!';
+        showToast('Berhasil disalin!', 'success');
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.textContent = originalText;
+        }, 2000);
+      }
+    }
+
+    // ===========================
+    // Generate Nama
+    // ===========================
+    function generateNama() {
+      const isMale = Math.random() > 0.5;
+      const depan = isMale ? rand(NAMA_DEPAN_L) : rand(NAMA_DEPAN_P);
+      const tengah = rand(NAMA_TENGAH);
+      const belakang = rand(NAMA_BELAKANG);
+      
+      const parts = [depan];
+      if (tengah) parts.push(tengah);
+      parts.push(belakang);
+      
+      return parts.join(' ');
+    }
+
+    // ===========================
+    // Generate Alamat
+    // ===========================
+    function generateAlamat() {
+      const jalan = rand(JALAN);
+      const nomor = randNum(1, 200);
+      const rt = String(randNum(1, 20)).padStart(2, '0');
+      const rw = String(randNum(1, 15)).padStart(2, '0');
+      const wilayah = rand(KELURAHAN_KECAMATAN);
+
+      return {
+        full: `${jalan} No. ${nomor}, RT ${rt}/RW ${rw}\nKel. ${wilayah.kel}, Kec. ${wilayah.kec}\n${wilayah.kota}, ${wilayah.prov} ${wilayah.kpos}`,
+        html: `
+          <div class="address-block">
+            <div>${jalan} No. ${nomor}, RT ${rt}/RW ${rw}</div>
+            <div>Kel. ${wilayah.kel}, Kec. ${wilayah.kec}</div>
+            <div>${wilayah.kota}, ${wilayah.prov} ${wilayah.kpos}</div>
+          </div>
+        `
+      };
+    }
+
+    // ===========================
+    // Parse Hash & Render Links
+    // ===========================
+    function init() {
+      const hash = window.location.hash.slice(1);
+      const linkButtons = document.getElementById('linkButtons');
+
+      if (!hash) {
+        linkButtons.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem;text-align:center;padding:16px 0;">Tidak ada link yang tersedia</p>';
+        return;
+      }
+
+      try {
+        const decoded = decodeURIComponent(escape(atob(hash)));
+        const data = JSON.parse(decoded);
+
+        if (!data.links || !data.links.length) {
+          throw new Error('No links');
+        }
+
+        data.links.forEach((link, i) => {
+          const btn = document.createElement('a');
+          btn.href = link.url;
+          btn.target = '_blank';
+          btn.rel = 'noopener noreferrer';
+          btn.className = 'btn btn-link animate-fade-in';
+          btn.style.animationDelay = `${i * 100}ms`;
+          
+          // Determine display text
+          let displayText = link.label || '';
+          if (!displayText) {
+            try {
+              const url = new URL(link.url);
+              displayText = url.hostname + (url.pathname !== '/' ? url.pathname : '');
+              if (displayText.length > 40) displayText = displayText.substring(0, 37) + '...';
+            } catch {
+              displayText = `Link ${i + 1}`;
+            }
+          }
+
+          btn.innerHTML = `
+            <span class="link-text">${displayText}</span>
+            <span class="link-arrow">→</span>
+          `;
+          linkButtons.appendChild(btn);
+        });
+      } catch (e) {
+        linkButtons.innerHTML = '<p style="color:var(--danger);font-size:0.9rem;text-align:center;padding:16px 0;">⚠️ Link tidak valid atau rusak</p>';
+      }
+    }
+
+    // ===========================
+    // Event Listeners
+    // ===========================
+    let currentName = '';
+    let currentAddress = '';
+
+    document.getElementById('generateNameBtn').addEventListener('click', () => {
+      currentName = generateNama();
+      const result = document.getElementById('nameResult');
+      result.classList.add('has-value');
+      result.innerHTML = `<span class="generator-result-text">${currentName}</span>`;
+      document.getElementById('copyNameBtn').disabled = false;
+      
+      // Micro-animation
+      result.style.transform = 'scale(0.98)';
+      setTimeout(() => result.style.transform = 'scale(1)', 100);
+    });
+
+    document.getElementById('copyNameBtn').addEventListener('click', () => {
+      if (currentName) {
+        copyText(currentName, document.getElementById('copyNameBtn'), '📋 Copy');
+      }
+    });
+
+    document.getElementById('generateAddrBtn').addEventListener('click', () => {
+      const addr = generateAlamat();
+      currentAddress = addr.full;
+      const result = document.getElementById('addressResult');
+      result.classList.add('has-value');
+      result.innerHTML = `<span class="generator-result-text">${addr.html}</span>`;
+      document.getElementById('copyAddrBtn').disabled = false;
+      
+      // Micro-animation
+      result.style.transform = 'scale(0.98)';
+      setTimeout(() => result.style.transform = 'scale(1)', 100);
+    });
+
+    document.getElementById('copyAddrBtn').addEventListener('click', () => {
+      if (currentAddress) {
+        copyText(currentAddress, document.getElementById('copyAddrBtn'), '📋 Copy');
+      }
+    });
+
+    // === Init ===
+    init();
+
+    // === Register Service Worker ===
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
