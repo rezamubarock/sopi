@@ -296,49 +296,63 @@
     function init() {
       const hash = window.location.hash.slice(1);
       const linkButtons = document.getElementById('linkButtons');
+      let data = null;
 
-      if (!hash) {
+      // 1. If hash exists, decode it and save to localStorage
+      if (hash) {
+        try {
+          const decoded = decodeURIComponent(escape(atob(hash)));
+          data = JSON.parse(decoded);
+          // Save to localStorage for PWA standalone access
+          localStorage.setItem('sopi_links', JSON.stringify(data));
+        } catch (e) {
+          data = null;
+        }
+      }
+
+      // 2. If no hash (e.g. PWA opened from home screen), load from localStorage
+      if (!data) {
+        try {
+          const saved = localStorage.getItem('sopi_links');
+          if (saved) data = JSON.parse(saved);
+        } catch (e) {
+          data = null;
+        }
+      }
+
+      // 3. No data at all
+      if (!data || !data.links || !data.links.length) {
         linkButtons.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem;text-align:center;padding:16px 0;">Tidak ada link yang tersedia</p>';
         return;
       }
 
-      try {
-        const decoded = decodeURIComponent(escape(atob(hash)));
-        const data = JSON.parse(decoded);
-
-        if (!data.links || !data.links.length) {
-          throw new Error('No links');
+      // 4. Render link buttons
+      data.links.forEach((link, i) => {
+        const btn = document.createElement('a');
+        btn.href = link.url;
+        btn.target = '_blank';
+        btn.rel = 'noopener noreferrer';
+        btn.className = 'btn btn-link animate-fade-in';
+        btn.style.animationDelay = `${i * 100}ms`;
+        
+        // Determine display text
+        let displayText = link.label || '';
+        if (!displayText) {
+          try {
+            const url = new URL(link.url);
+            displayText = url.hostname + (url.pathname !== '/' ? url.pathname : '');
+            if (displayText.length > 40) displayText = displayText.substring(0, 37) + '...';
+          } catch {
+            displayText = `Link ${i + 1}`;
+          }
         }
 
-        data.links.forEach((link, i) => {
-          const btn = document.createElement('a');
-          btn.href = link.url;
-          btn.target = '_blank';
-          btn.rel = 'noopener noreferrer';
-          btn.className = 'btn btn-link animate-fade-in';
-          btn.style.animationDelay = `${i * 100}ms`;
-          
-          // Determine display text
-          let displayText = link.label || '';
-          if (!displayText) {
-            try {
-              const url = new URL(link.url);
-              displayText = url.hostname + (url.pathname !== '/' ? url.pathname : '');
-              if (displayText.length > 40) displayText = displayText.substring(0, 37) + '...';
-            } catch {
-              displayText = `Link ${i + 1}`;
-            }
-          }
-
-          btn.innerHTML = `
-            <span class="link-text">${displayText}</span>
-            <span class="link-arrow">→</span>
-          `;
-          linkButtons.appendChild(btn);
-        });
-      } catch (e) {
-        linkButtons.innerHTML = '<p style="color:var(--danger);font-size:0.9rem;text-align:center;padding:16px 0;">⚠️ Link tidak valid atau rusak</p>';
-      }
+        btn.innerHTML = `
+          <span class="link-text">${displayText}</span>
+          <span class="link-arrow">→</span>
+        `;
+        linkButtons.appendChild(btn);
+      });
     }
 
     // ===========================
