@@ -2,7 +2,7 @@
   "name": "Sopi Tools",
   "short_name": "Sopi",
   "description": "Generator link custom dengan tools nama & alamat acak Indonesia",
-  "start_url": "/",
+  "start_url": "/go",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0a0e1a",

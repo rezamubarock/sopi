@@ -15,6 +15,16 @@
 </head>
 <body>
   <div class="app-container">
+    <!-- Install Banner -->
+    <div class="install-banner" id="installBanner">
+      <div class="install-banner-text">
+        <div class="install-banner-title">📲 Install Sopi Tools</div>
+        <div class="install-banner-desc">Akses lebih cepat dari home screen</div>
+      </div>
+      <button class="btn btn-sm btn-primary" id="installBtn" style="width:auto;">Install</button>
+      <button class="btn btn-sm btn-secondary" id="dismissInstall" style="width:32px;height:32px;padding:0;">✕</button>
+    </div>
+
     <!-- Header -->
     <header class="app-header">
       <div class="app-logo">
@@ -376,6 +386,31 @@
 
     // === Init ===
     init();
+
+    // === PWA Install ===
+    let deferredPrompt;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installBanner').classList.add('show');
+    });
+
+    document.getElementById('installBtn').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          showToast('App berhasil diinstall! 🎉', 'success');
+        }
+        deferredPrompt = null;
+        document.getElementById('installBanner').classList.remove('show');
+      }
+    });
+
+    document.getElementById('dismissInstall').addEventListener('click', () => {
+      document.getElementById('installBanner').classList.remove('show');
+    });
 
     // === Register Service Worker ===
     if ('serviceWorker' in navigator) {
